@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+"""FlexPepDock 결과에서 MD 후보 medoid를 선택합니다.
+
+실행: PDB와 *_filtered_scores.tsv를 모은 폴더에서
+      conda activate cabs_cluster
+      python clustering_RMSD_Flex_score.py
+필요 package: numpy, pandas, MDAnalysis, scikit-learn, scikit-learn-extra.
+검증 환경: Python 3.11, numpy 1.26.4, scipy 1.14.1, pandas 2.2.3,
+           MDAnalysis 2.10.0, scikit-learn 1.5.2, scikit-learn-extra 0.3.0.
+scikit-learn-extra 0.3.0의 binary 호환성을 위해 numpy 1.26.4 환경을 사용합니다.
+
+기존 FlexPepDock script의 distance 정의를 유지합니다:
+  receptor Cα를 공통 reference에 alignment → peptide backbone(N, CA, C, O)
+  pairwise RMSD 계산. Peptide 자체를 추가 fitting하지 않습니다.
+  CABS-dock script의 peptide Cα RMSD와 atom selection은 다릅니다.
+
+Clustering: k=10, random initialization 100회, alternate update.
+수렴하고 k개 cluster가 모두 비어 있지 않은 결과 중 최소 inertia를 선택합니다.
+Inertia는 각 model에서 소속 medoid까지의 RMSD 총합이며, 제곱합이 아닙니다.
+이는 multi-start k-medoids이며 CABS-dock의 consensus 절차 재현은 아닙니다.
+
+대표 구조는 최저-score model이 아닌 medoid입니다. Score는 출력용이며
+clustering, medoid 선택, cluster 정렬에 사용하지 않습니다.
+Cluster는 size 내림차순(동일 size이면 내부 ID순)으로 표시합니다.
+K는 후보 수 설정이며, cluster size는 binding probability가 아닙니다.
+
+출력: clustering_results_kmedoids_score.csv (한 행 = 입력 PDB 하나)
+      representatives_kmedoids/cluster_01_medoid.pdb ... cluster_10_medoid.pdb
+CSV에 원본 PDB명과 source TSV명을 기록합니다. 복사되는 PDB는 원본 좌표입니다.
+Mean/max RMSD는 medoid까지의 거리이며 all-pairs RMSD가 아닙니다.
+Mean에는 medoid의 0을 포함합니다. Singleton의 RMSD=0은 품질 증거가 아닙니다.
+정상 재실행 시 같은 이름의 출력 파일을 덮어씁니다.
+"""
+
+import csv
+import glob
+import os
+import shutil
+import warnings
+
+import numpy as np
+import pandas as pd
+import MDAnalysis as mda
+from MDAnalysis.analysis import align
+from sklearn.exceptions import ConvergenceWarning
+from sklearn_extra.cluster import KMedoids
+
+# 0. 사용자 설정
+# 기본값은 terminal의 현재 작업 폴더입니다. 필요하면 절대 경로로 바꾸세요.
+# WSL 경로 예: /home/hanbin/FlexPepDock/Clustering 또는 /mnt/c/FlexPepDock
+INPUT_DIR = "."
+align_sel = "segid A and protein and name CA and not name H*"
+pep_rmsd_sel = "segid P and protein and backbone and not name H*"
+# segid와 PDB chainID가 다르면 실제 입력의 identifier에 맞게 수정하세요.
+k = 10
+N_RESTARTS = 100
+FIRST_SEED = 0
+MAX_ITER = 300
+OUT_CSV = "clustering_results_kmedoids_score.csv"
+REP_SUBDIR = "representatives_kmedoids"
+
+
+def load_verified_scores(input_dir, pdb_files):
+    """각 Job의 top10 score를 다운로드 PDB 파일명에 순서 가정으로 연결합니다.
+
+    중요: ROSIE의 model_01.pdb가 해당 TSV index=0에 대응한다는
+    사용자 지정 가정입니다. 원본 Rosetta description으로 직접 검증한 매칭은 아닙니다.
+    Score는 clustering/medoid 선정에 사용하지 않고 결과 표시에만 사용합니다.
+    """
+    suffix = "_top10_scores.tsv"
+    tsv_files = sorted(glob.glob(os.path.join(input_dir, "*" + suffix)))
+    if not tsv_files:
+        raise ValueError(f"{input_dir}: *{suffix} 파일이 없습니다.")
+
+    pdb_scores = {}
+    score_sources = {}
+    for tsv_path in tsv_files:
+        filename = os.path.basename(tsv_path)
+        prefix = filename[:-len(suffix)]
+        df = pd.read_csv(tsv_path, sep="\t", dtype=str, keep_default_na=False)
+        if not {"index", "reweighted_sc"}.issubset(df.columns):
+            raise ValueError(f"{filename}: index 및 reweighted_sc 열이 필요합니다: {list(df.columns)}")
+        if len(df) != 10:
+            raise ValueError(f"{filename}: 모델 점수 10행을 예상했지만 {len(df)}행입니다.")
+
+        indices = pd.to_numeric(df["index"], errors="raise")
+        if not np.all(np.isfinite(indices)) or not np.all(indices == indices.astype(int)):
+            raise ValueError(f"{filename}: index는 0~9 정수여야 합니다.")
+        indices = indices.astype(int)
+        if sorted(indices.tolist()) != list(range(10)):
+            raise ValueError(f"{filename}: index가 0~9를 한 번씩 포함해야 합니다.")
+
+        scores = pd.to_numeric(df["reweighted_sc"], errors="coerce")
+        if not np.isfinite(scores.to_numpy(dtype=float)).all():
+            raise ValueError(f"{filename}: 유효하지 않은 reweighted_sc 값이 있습니다.")
+
+        # Assumption: index 0 -> model_01.pdb, ..., index 9 -> model_10.pdb
+        for idx, score in zip(indices, scores):
+            actual = f"{prefix}_model_{idx + 1:02d}.pdb"
+            if actual in pdb_scores:
+                raise ValueError(f"{actual}: 여러 TSV에서 중복 연결되었습니다.")
+            pdb_scores[actual] = float(score)
+            score_sources[actual] = filename
+
+    input_names = [os.path.basename(p) for p in pdb_files]
+    missing = sorted(set(input_names) - set(pdb_scores))
+    extra = sorted(set(pdb_scores) - set(input_names))
+    if missing or extra:
+        raise ValueError(f"PDB-TSV 파일 집합 불일치; PDB 점수 누락={missing}, PDB 없는 점수={extra}")
+    print(f"[INFO] Assumed top10 index-to-filename mapping for {len(input_names)} PDBs (not independently verified).")
+    return ({name: pdb_scores[name] for name in input_names},
+            {name: score_sources[name] for name in input_names})
+
+
+def atom_signature(atoms, filename):
+    """Atom 수뿐 아니라 residue와 atom의 대응 순서도 확인합니다."""
+    keys = [(a.segid, a.resid, a.icode, a.name) for a in atoms]
+    if not keys or len(set(keys)) != len(keys):
+        raise ValueError(f"{filename}: 빈 selection 또는 중복 atom입니다. alternate location을 확인하세요.")
+    return [(a.segid, a.resid, a.icode, a.resname, a.name) for a in atoms]
+
+
+def fit_restarts(dist_matrix):
+    """N_RESTARTS회 중 유효한 최소 inertia의 fit을 선택합니다. 전역 최적해 보장은 없습니다."""
+    best_fit = None
+    for seed in range(FIRST_SEED, FIRST_SEED + N_RESTARTS):
+        candidate = KMedoids(
+            n_clusters=k, metric="precomputed", method="alternate",
+            init="random", random_state=seed, max_iter=MAX_ITER,
+        )
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            candidate.fit(dist_matrix)
+        # 알려진 실패 경고 외의 경고는 숨기지 않습니다.
+        for warning in caught:
+            if (not issubclass(warning.category, ConvergenceWarning)
+                    and "Cluster " not in str(warning.message)):
+                warnings.warn(str(warning.message), warning.category)
+        if any(issubclass(w.category, ConvergenceWarning) for w in caught):
+            continue
+        if (len(np.unique(candidate.labels_)) != k
+                or len(np.unique(candidate.medoid_indices_)) != k
+                or not np.isfinite(candidate.inertia_)):
+            continue
+        if not np.array_equal(candidate.labels_[candidate.medoid_indices_], np.arange(k)):
+            continue  # 동일 좌표 등의 이유로 medoid가 자기 cluster에 속하지 않는 결과 제외
+        # 정확한 동점이면 먼저 실행한 seed를 유지합니다.
+        if best_fit is None or candidate.inertia_ < best_fit.inertia_:
+            best_fit = candidate
+    if best_fit is None:
+        raise ValueError(
+            "수렴한 비어 있지 않은 k개 cluster를 얻지 못했습니다. "
+            "중복 구조, model 다양성 및 MAX_ITER를 확인하세요. 출력은 저장하지 않았습니다."
+        )
+    return best_fit
+
+
+def main():
+    # 1. TSV index와 다운로드 PDB 번호를 순서 가정으로 연결합니다.
+    input_dir = os.path.abspath(INPUT_DIR)
+    pdb_files = sorted(glob.glob(os.path.join(input_dir, "*.pdb")))
+    for name, value in (("k", k), ("N_RESTARTS", N_RESTARTS), ("MAX_ITER", MAX_ITER)):
+        if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+            raise ValueError(f"{name}은 양의 정수여야 합니다.")
+    if not 2 <= k <= len(pdb_files):
+        raise ValueError(f"2 <= k <= PDB 개수가 필요합니다: k={k}, PDB={len(pdb_files)}, {input_dir}")
+    if (isinstance(FIRST_SEED, bool) or not isinstance(FIRST_SEED, int)
+            or FIRST_SEED < 0 or FIRST_SEED + N_RESTARTS - 1 > 2**32 - 1):
+        raise ValueError("Random seed 범위는 0..2**32-1이어야 합니다.")
+    pdb_scores, score_sources = load_verified_scores(input_dir, pdb_files)
+    print(f"[INFO] Loaded assumed PDB-score correspondence for {len(pdb_files)} models.")
+
+    # 2. Atom 대응 확인 및 receptor 기준 공통 reference alignment
+    universes = [mda.Universe(p) for p in pdb_files]
+    signatures = {}
+    for filename, u in zip(pdb_files, universes):
+        if len(u.trajectory) != 1 or not np.isfinite(u.atoms.positions).all():
+            raise ValueError(f"{filename}: 유효한 좌표의 단일 model PDB가 필요합니다.")
+        for selection in (align_sel, pep_rmsd_sel):
+            signature = atom_signature(u.select_atoms(selection), filename)
+            if selection not in signatures:
+                signatures[selection] = signature
+            elif signature != signatures[selection]:
+                raise ValueError(f"{filename}: atom identity/order가 reference와 다릅니다: {selection}")
+        rec_xyz = u.select_atoms(align_sel).positions.astype(float)
+        if len(rec_xyz) < 3 or np.linalg.matrix_rank(rec_xyz - rec_xyz.mean(axis=0)) < 2:
+            raise ValueError(f"{filename}: alignment에는 일직선에 있지 않은 receptor Cα 3개 이상이 필요합니다.")
+    ref = universes[0]
+    print(f"[INFO] Aligning to {os.path.basename(pdb_files[0])}...")
+    for u in universes[1:]:
+        align.alignto(u, ref, select=align_sel, weights=None, strict=True)
+
+    # 3. 모든 pair의 peptide backbone RMSD. Receptor를 pair별로 다시 fitting하지 않습니다.
+    print("[INFO] Calculating peptide backbone RMSD matrix...")
+    pep_coords = np.array([u.select_atoms(pep_rmsd_sel).positions.copy() for u in universes], dtype=float)
+    n_models, n_pep, _ = pep_coords.shape
+    dist_matrix = np.zeros((n_models, n_models), dtype=float)
+    for i in range(n_models):
+        for j in range(i + 1, n_models):
+            diff = pep_coords[i] - pep_coords[j]
+            d = np.sqrt((diff**2).sum() / n_pep)
+            dist_matrix[i, j] = dist_matrix[j, i] = d
+    if not np.isfinite(dist_matrix).all():
+        raise ValueError("RMSD matrix에 비정상 값이 있습니다. alignment와 좌표를 확인하세요.")
+
+    # 4. CABS-dock 분석 script와 동일한 multi-start k-medoids 설정
+    print(f"[INFO] Running {N_RESTARTS} random initializations with k={k}...")
+    fit = fit_restarts(dist_matrix)
+    clusters = []
+    for cid in range(k):
+        members = np.flatnonzero(fit.labels_ == cid)
+        medoid = int(fit.medoid_indices_[cid])
+        distances = dist_matrix[members, medoid]
+        clusters.append(dict(cid=cid, members=members, medoid=medoid,
+                             size=len(members), mean=float(distances.mean()), max=float(distances.max())))
+    clusters.sort(key=lambda row: (-row["size"], row["cid"]))
+
+    # 5. Medoid PDB 복사 및 CSV 저장. Score로 representative를 교체하지 않습니다.
+    rep_dir = os.path.join(input_dir, REP_SUBDIR)
+    planned_names = {f"cluster_{rank:02d}_medoid.pdb" for rank in range(1, k + 1)}
+    existing_names = {os.path.basename(p) for p in glob.glob(os.path.join(rep_dir, "*.pdb"))}
+    if existing_names - planned_names:
+        raise ValueError(
+            f"{rep_dir}: 이번 결과와 섞일 기존 PDB가 있습니다. "
+            "기존 폴더를 별도 보관하거나 REP_SUBDIR을 새 이름으로 설정하세요."
+        )
+    os.makedirs(rep_dir, exist_ok=True)
+    csv_path = os.path.join(input_dir, OUT_CSV)
+    with open(csv_path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow([
+            "cluster_rank_by_size", "cluster_id", "cluster_size", "pdb_file", "is_medoid",
+            "reweighted_sc", "score_file", "rmsd_to_medoid_A",
+            "cluster_mean_rmsd_to_medoid_A", "cluster_max_rmsd_to_medoid_A",
+        ])
+        for rank, row in enumerate(clusters, start=1):
+            medoid = row["medoid"]
+            shutil.copy2(pdb_files[medoid], os.path.join(rep_dir, f"cluster_{rank:02d}_medoid.pdb"))
+            for idx in row["members"]:
+                name = os.path.basename(pdb_files[idx])
+                writer.writerow([
+                    rank, row["cid"], row["size"], name, int(idx == medoid),
+                    pdb_scores[name], score_sources[name], f"{dist_matrix[idx, medoid]:.6f}",
+                    f"{row['mean']:.6f}", f"{row['max']:.6f}",
+                ])
+            name = os.path.basename(pdb_files[medoid])
+            print(f"Cluster {rank:02d} | Size: {row['size']:3d} | Medoid: {name} "
+                  f"| reweighted_sc: {pdb_scores[name]:.3f}")
+    print(f"[COMPLETE] {csv_path}")
+    print(f"[COMPLETE] {rep_dir} ({k} medoid PDBs)")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (ValueError, OSError) as exc:
+        raise SystemExit(f"[ERROR] {exc}") from None

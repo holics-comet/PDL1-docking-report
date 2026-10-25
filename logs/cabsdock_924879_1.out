@@ -1,0 +1,15 @@
+==========================================
+SLURM_JOB_ID = 924880
+SLURM_NODELIST = cpu01
+==========================================
+==========================================
+CABS-dock: PD-L1 + PD-L1 Pep-1
+Job ID     : 924880
+Array ID   : 1
+Node       : cpu01
+Input      : /home01/a2149a01/CABSdock_PD_L1/inputs/PD_L1_cleaned.pdb
+Peptide    : CLQKTPKQC
+Output     : /scratch/a2149a01/CABSdock_PD_L1/runs/Pep1_run_01
+CABSdock   : /scratch/a2149a01/micromamba/envs/cabs/bin/CABSdock
+==========================================
+Run 01 finished successfully

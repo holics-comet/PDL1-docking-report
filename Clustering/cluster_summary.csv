@@ -1,0 +1,11 @@
+Rank,Cluster_ID,Size,Medoid,Mean_RMSD_to_Medoid_Angstrom,Max_RMSD_to_Medoid_Angstrom,Mean_Silhouette
+1,3,15,run09_model_3.pdb,3.698428,6.956860,0.360732
+2,8,14,run05_model_1.pdb,3.918663,7.379928,0.387135
+3,2,13,run01_model_3.pdb,3.918350,8.821788,0.297550
+4,5,12,run03_model_1.pdb,5.807033,17.372818,-0.064937
+5,9,12,run09_model_5.pdb,5.303388,12.987237,0.338164
+6,1,11,run05_model_2.pdb,3.407059,6.335052,0.202726
+7,4,8,run08_model_8.pdb,3.780603,12.354217,0.069401
+8,6,6,run06_model_9.pdb,5.029987,7.886079,0.181464
+9,7,6,run08_model_7.pdb,6.505927,13.705111,0.563745
+10,0,3,run08_model_5.pdb,2.939850,4.431196,0.495732

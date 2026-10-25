@@ -1,0 +1,14 @@
+.gitignore.local
+__pycache__/
+*.pyc
+*.log
+*.tmp
+.DS_Store
+.env
+.env.*
+*.pem
+*.key
+.ssh/
+miniforge3/
+micromamba/
+conda_envs/

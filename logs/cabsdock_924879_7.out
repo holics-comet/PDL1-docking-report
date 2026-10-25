@@ -1,0 +1,15 @@
+==========================================
+SLURM_JOB_ID = 925014
+SLURM_NODELIST = cpu06
+==========================================
+==========================================
+CABS-dock: PD-L1 + PD-L1 Pep-1
+Job ID     : 925014
+Array ID   : 7
+Node       : cpu06
+Input      : /home01/a2149a01/CABSdock_PD_L1/inputs/PD_L1_cleaned.pdb
+Peptide    : CLQKTPKQC
+Output     : /scratch/a2149a01/CABSdock_PD_L1/runs/Pep1_run_07
+CABSdock   : /scratch/a2149a01/micromamba/envs/cabs/bin/CABSdock
+==========================================
+Run 07 finished successfully

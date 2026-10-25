@@ -1,0 +1,296 @@
+=== Cluster Member List ===
+Models: 100; k: 10; reference: run01_model_0.pdb
+Alignment selection: segid A and name CA; peptide selection: segid P and name CA
+Distance: common-reference receptor-aligned peptide CA RMSD (Angstrom); no peptide fitting.
+KMedoids: method=alternate; init=random; max_iter=300
+Random seeds: 0..99; eligible fits: 100/100
+Selected seed: 91; minimum inertia (Angstrom): 440.35880752
+Overall mean RMSD to assigned medoid (Angstrom): 4.403588
+Overall mean silhouette (model-weighted): 0.267214
+Selection: minimum inertia among eligible fits; exact ties use the lowest seed.
+Ranking: size descending. Diagnostics do not select or exclude models.
+Mean/max RMSD are distances to the medoid, NOT all-pairs cluster distances.
+Mean includes the medoid's zero distance. Singleton RMSD=0 and silhouette=0 by convention; this is not evidence of quality.
+
+Cluster Rank 1 (Original ID: 3)
+  - Size: 15 models
+  - Representative (Medoid): run09_model_3.pdb
+  - Mean RMSD to medoid (Angstrom): 3.698428
+  - Maximum RMSD to medoid (Angstrom): 6.956860
+  - Mean silhouette: 0.360732
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run01_model_6.pdb	1.991225	0.531296
+      run03_model_0.pdb	3.580920	0.310038
+      run03_model_2.pdb	1.989263	0.537436
+      run03_model_3.pdb	3.949012	0.467657
+      run04_model_2.pdb	5.064318	0.209567
+      run04_model_3.pdb	6.934374	0.027402
+      run05_model_0.pdb	3.585976	0.511693
+      run06_model_1.pdb	2.216132	0.510782
+      run06_model_5.pdb	3.515158	0.476222
+      run07_model_0.pdb	3.411094	0.423940
+      run07_model_7.pdb	6.293719	0.146324
+      run08_model_6.pdb	3.820534	0.265967
+      run09_model_3.pdb	0.000000	0.499192
+      run10_model_0.pdb	2.167833	0.478353
+      run10_model_9.pdb	6.956860	0.015109
+
+Cluster Rank 2 (Original ID: 8)
+  - Size: 14 models
+  - Representative (Medoid): run05_model_1.pdb
+  - Mean RMSD to medoid (Angstrom): 3.918663
+  - Maximum RMSD to medoid (Angstrom): 7.379928
+  - Mean silhouette: 0.387135
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run01_model_2.pdb	4.360268	0.466389
+      run02_model_3.pdb	3.093883	0.443570
+      run02_model_4.pdb	3.694616	0.268151
+      run03_model_4.pdb	2.550011	0.407445
+      run05_model_1.pdb	0.000000	0.437725
+      run05_model_3.pdb	5.285697	0.435994
+      run06_model_2.pdb	3.203653	0.349863
+      run06_model_3.pdb	4.546781	0.115813
+      run06_model_6.pdb	7.379928	0.176674
+      run07_model_2.pdb	3.616921	0.500625
+      run07_model_6.pdb	5.344858	0.340853
+      run08_model_1.pdb	3.668603	0.502440
+      run09_model_2.pdb	3.368848	0.525574
+      run10_model_5.pdb	4.747218	0.448781
+
+Cluster Rank 3 (Original ID: 2)
+  - Size: 13 models
+  - Representative (Medoid): run01_model_3.pdb
+  - Mean RMSD to medoid (Angstrom): 3.918350
+  - Maximum RMSD to medoid (Angstrom): 8.821788
+  - Mean silhouette: 0.297550
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run01_model_3.pdb	0.000000	0.398377
+      run01_model_5.pdb	2.033549	0.203123
+      run01_model_8.pdb	6.919692	0.282243
+      run02_model_8.pdb	4.086729	0.233607
+      run04_model_5.pdb	4.069104	0.383542
+      run05_model_5.pdb	3.684291	0.278046
+      run06_model_4.pdb	1.278218	0.360143
+      run06_model_7.pdb	5.496872	0.225629
+      run07_model_1.pdb	2.089492	0.457386
+      run09_model_0.pdb	2.396630	0.274720
+      run09_model_1.pdb	8.821788	0.142311
+      run10_model_1.pdb	2.968182	0.385074
+      run10_model_4.pdb	7.094009	0.243948
+
+Cluster Rank 4 (Original ID: 5)
+  - Size: 12 models
+  - Representative (Medoid): run03_model_1.pdb
+  - Mean RMSD to medoid (Angstrom): 5.807033
+  - Maximum RMSD to medoid (Angstrom): 17.372818
+  - Mean silhouette: -0.064937
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run01_model_9.pdb	7.456605	-0.166433
+      run02_model_0.pdb	3.941221	-0.035274
+      run03_model_1.pdb	0.000000	-0.101801
+      run03_model_9.pdb	17.372818	0.008459
+      run04_model_0.pdb	1.635610	-0.170266
+      run04_model_8.pdb	10.254386	-0.147397
+      run05_model_7.pdb	3.710800	-0.189591
+      run05_model_9.pdb	7.140921	0.123108
+      run07_model_3.pdb	3.128047	-0.224838
+      run08_model_0.pdb	3.720673	-0.029425
+      run09_model_8.pdb	7.760292	0.189299
+      run10_model_6.pdb	3.563020	-0.035081
+
+Cluster Rank 5 (Original ID: 9)
+  - Size: 12 models
+  - Representative (Medoid): run09_model_5.pdb
+  - Mean RMSD to medoid (Angstrom): 5.303388
+  - Maximum RMSD to medoid (Angstrom): 12.987237
+  - Mean silhouette: 0.338164
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run01_model_0.pdb	4.102197	0.415483
+      run01_model_4.pdb	4.591416	0.418229
+      run01_model_7.pdb	4.876965	0.336008
+      run02_model_2.pdb	4.769348	0.356089
+      run03_model_8.pdb	3.800604	0.496601
+      run04_model_7.pdb	12.987237	0.174601
+      run05_model_4.pdb	6.652023	0.111633
+      run07_model_5.pdb	5.753784	0.396520
+      run08_model_3.pdb	4.476632	0.399085
+      run08_model_9.pdb	4.761879	0.400607
+      run09_model_5.pdb	0.000000	0.487477
+      run10_model_7.pdb	6.868569	0.065632
+
+Cluster Rank 6 (Original ID: 1)
+  - Size: 11 models
+  - Representative (Medoid): run05_model_2.pdb
+  - Mean RMSD to medoid (Angstrom): 3.407059
+  - Maximum RMSD to medoid (Angstrom): 6.335052
+  - Mean silhouette: 0.202726
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run02_model_7.pdb	3.495218	0.315005
+      run02_model_9.pdb	2.804435	0.335382
+      run03_model_5.pdb	2.539920	0.278914
+      run03_model_6.pdb	2.796086	0.268566
+      run04_model_1.pdb	3.216895	0.152272
+      run04_model_4.pdb	6.335052	-0.030863
+      run05_model_2.pdb	0.000000	0.260374
+      run05_model_6.pdb	4.272521	0.153734
+      run06_model_0.pdb	5.359090	0.063100
+      run07_model_4.pdb	3.692155	0.158751
+      run10_model_2.pdb	2.966275	0.274748
+
+Cluster Rank 7 (Original ID: 4)
+  - Size: 8 models
+  - Representative (Medoid): run08_model_8.pdb
+  - Mean RMSD to medoid (Angstrom): 3.780603
+  - Maximum RMSD to medoid (Angstrom): 12.354217
+  - Mean silhouette: 0.069401
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run01_model_1.pdb	2.929628	-0.014232
+      run02_model_1.pdb	3.478272	0.067166
+      run02_model_6.pdb	4.151569	-0.079030
+      run08_model_2.pdb	2.676938	0.159349
+      run08_model_4.pdb	1.545617	0.142295
+      run08_model_8.pdb	0.000000	0.214403
+      run09_model_4.pdb	3.108581	0.076962
+      run09_model_7.pdb	12.354217	-0.011706
+
+Cluster Rank 8 (Original ID: 6)
+  - Size: 6 models
+  - Representative (Medoid): run06_model_9.pdb
+  - Mean RMSD to medoid (Angstrom): 5.029987
+  - Maximum RMSD to medoid (Angstrom): 7.886079
+  - Mean silhouette: 0.181464
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run03_model_7.pdb	4.797072	0.067202
+      run06_model_8.pdb	7.886079	0.210718
+      run06_model_9.pdb	0.000000	0.372481
+      run07_model_8.pdb	4.570375	0.321739
+      run10_model_3.pdb	5.713911	0.022777
+      run10_model_8.pdb	7.212484	0.093867
+
+Cluster Rank 9 (Original ID: 7)
+  - Size: 6 models
+  - Representative (Medoid): run08_model_7.pdb
+  - Mean RMSD to medoid (Angstrom): 6.505927
+  - Maximum RMSD to medoid (Angstrom): 13.705111
+  - Mean silhouette: 0.563745
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run04_model_6.pdb	13.705111	0.291707
+      run04_model_9.pdb	6.288159	0.649396
+      run05_model_8.pdb	2.490658	0.653404
+      run07_model_9.pdb	6.874347	0.611177
+      run08_model_7.pdb	0.000000	0.656943
+      run09_model_9.pdb	9.677286	0.519844
+
+Cluster Rank 10 (Original ID: 0)
+  - Size: 3 models
+  - Representative (Medoid): run08_model_5.pdb
+  - Mean RMSD to medoid (Angstrom): 2.939850
+  - Maximum RMSD to medoid (Angstrom): 4.431196
+  - Mean silhouette: 0.495732
+  - Members (RMSD to medoid in Angstrom; silhouette):
+      run02_model_5.pdb	4.388356	0.463227
+      run08_model_5.pdb	0.000000	0.532869
+      run09_model_6.pdb	4.431196	0.491101
+
+=== Random Initialization Audit ===
+Seed	Status	Inertia_Angstrom	Warnings
+0	eligible	542.79952112	
+1	eligible	458.28960045	
+2	eligible	464.84139560	
+3	eligible	454.52365722	
+4	eligible	459.73799716	
+5	eligible	462.77904981	
+6	eligible	445.63886299	
+7	eligible	442.62521795	
+8	eligible	459.67292278	
+9	eligible	449.45833930	
+10	eligible	449.86628855	
+11	eligible	458.65530653	
+12	eligible	460.78237678	
+13	eligible	465.25332989	
+14	eligible	450.51173088	
+15	eligible	538.67587947	
+16	eligible	492.47238176	
+17	eligible	576.29340349	
+18	eligible	477.51739581	
+19	eligible	542.51237745	
+20	eligible	442.25900669	
+21	eligible	466.46834377	
+22	eligible	466.77821521	
+23	eligible	457.97766771	
+24	eligible	452.12237206	
+25	eligible	445.64894290	
+26	eligible	509.57505145	
+27	eligible	461.98097856	
+28	eligible	453.45755734	
+29	eligible	529.87497638	
+30	eligible	454.84053031	
+31	eligible	540.37726889	
+32	eligible	446.03397451	
+33	eligible	464.11759465	
+34	eligible	443.16096915	
+35	eligible	539.22083684	
+36	eligible	455.79588944	
+37	eligible	499.74781120	
+38	eligible	459.79784341	
+39	eligible	447.43079861	
+40	eligible	453.38123975	
+41	eligible	540.08779124	
+42	eligible	446.92547893	
+43	eligible	441.56030191	
+44	eligible	452.27169161	
+45	eligible	453.00080907	
+46	eligible	542.16373418	
+47	eligible	533.94126685	
+48	eligible	443.91514350	
+49	eligible	452.91169496	
+50	eligible	457.05172627	
+51	eligible	451.15302653	
+52	eligible	459.63968103	
+53	eligible	464.21020451	
+54	eligible	490.77216638	
+55	eligible	467.78619477	
+56	eligible	454.74070566	
+57	eligible	454.33997583	
+58	eligible	447.36278919	
+59	eligible	459.48933897	
+60	eligible	470.54256998	
+61	eligible	491.05774009	
+62	eligible	523.71396553	
+63	eligible	452.73998390	
+64	eligible	536.07344741	
+65	eligible	482.57114923	
+66	eligible	458.62068455	
+67	eligible	460.25308303	
+68	eligible	455.01502067	
+69	eligible	458.55233304	
+70	eligible	466.29215548	
+71	eligible	541.34632485	
+72	eligible	472.57617825	
+73	eligible	537.23738516	
+74	eligible	531.49231089	
+75	eligible	452.10104431	
+76	eligible	535.15719596	
+77	eligible	462.70717736	
+78	eligible	444.18788006	
+79	eligible	533.92408327	
+80	eligible	456.46357698	
+81	eligible	460.72497780	
+82	eligible	457.80853884	
+83	eligible	457.02228021	
+84	eligible	549.81436028	
+85	eligible	468.65833659	
+86	eligible	481.07128951	
+87	eligible	453.39467780	
+88	eligible	475.38426737	
+89	eligible	458.48216081	
+90	eligible	491.17833199	
+91	eligible	440.35880752	
+92	eligible	473.11572001	
+93	eligible	452.15867017	
+94	eligible	452.59430537	
+95	eligible	452.13393023	
+96	eligible	461.61971125	
+97	eligible	458.74133525	
+98	eligible	448.93887763	
+99	eligible	489.19834626	
